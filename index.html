@@ -142,10 +142,8 @@
 
         async componentDidMount(){
           const idx = this.props.match.params.idx || 0;
-          console.log(idx);
           const user = await db.byId(this.props.match.params.idx);
           this.setState({user});
-          console.log(user);
         }
 
         async componentDidUpate(prevProps){
@@ -154,8 +152,9 @@
             const idx = this.props.match.params.idx || 0;
             const user = await db.byId(idx);
             this.setState({user});
-            console.log(user);
+
           }
+          console.log(user);
 
         }
 
@@ -170,10 +169,11 @@
           <div>
           {this.props.match.params.idx}
           <div>
-            <h3>{user && user.name}</h3>
-            <form onSubmit={()=> onCreate(name)}>
-              <label>Create a User </label>
-              <input name="name" type="text" value={name} onChange={onChange}/>
+            <h3>Update a User</h3>
+            <form>
+              <input name="name" type="text" value={user && user.name} onChange={onChange}/>
+              <button type='submit'>Update</button>
+              <button type='submit'>Delete</button>
             </form>
           </div>
           </div>
