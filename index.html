@@ -116,45 +116,74 @@
         constructor(){
           super();
           this.state = {
-            count: 0,
-            user: {},
-            name: ""
+            user: {}
           }
           this.onCreate = this.onCreate.bind(this);
           this.onChange = this.onChange.bind(this);
+          this.onDelete = this.onDelete.bind(this);
+          this.onUpdate = this.onUpdate.bind(this);
+          this.onDeleteAll = this.onDeleteAll.bind(this);
         }
 
+      async onDeleteAll(){
+        event.preventDefault();
+        db.clear();
+        this.props.history.push('/users');
+      }
+
+      async onDelete(){
+        event.preventDefault();
+        const user = await db.destroy(this.state.user);
+        this.setState({user});
+        this.props.history.push('/users');
+
+      }
+
+      async onUpdate(){
+        event.preventDefault();
+        const user = await db.update(this.state.user);
+        this.setState({user});
+        this.props.history.push('/users');
+
+      }
+
        async onCreate(person){
-          event.preventDefault();
-          const newUser = await db.create({name: person});
-          console.log(newUser);
-          const users = [...this.state.users, newUser];
-          this.setState({users});
-          console.log(this.state);
-          this.state.name = "";
+          // event.preventDefault();
+          // const newUser = await db.create({name: person});
+          // console.log(newUser);
+          // const users = [...this.state.users, newUser];
+          // this.setState({users});
+          // console.log(this.state);
+          // this.state.name = "";
         }
+
 
         onChange(ev){
           this.setState({
-            [ev.target.name]: ev.target.value
-            })
+          [ev.target.name]: ev.target.value
+          })
+          console.log(this.state.user);
         }
 
         async componentDidMount(){
           const idx = this.props.match.params.idx || 0;
-          const user = await db.byId(this.props.match.params.idx);
+          const user = await db.byId(idx);
           this.setState({user});
+
         }
 
-        async componentDidUpate(prevProps){
-
+        async componentDidUpdate(prevProps){
+          try{
           if(prevProps.match.params.idx !== this.props.match.params.idx){
             const idx = this.props.match.params.idx || 0;
             const user = await db.byId(idx);
             this.setState({user});
-
           }
-          console.log(user);
+          }
+
+          catch(err){
+            console.log(err);
+          }
 
         }
 
@@ -162,18 +191,18 @@
 
         render(){
           const idx = this.props.match.params.idx ? this.props.match.params.idx * 1 : 0;
-          const {onChange, onCreate} = this;
-          const {count, name, user} = this.state;
+          const {onChange, onDelete, onUpdate, onDeleteAll} = this;
+          const {user} = this.state;
 
           return(
           <div>
-          {this.props.match.params.idx}
           <div>
             <h3>Update a User</h3>
-            <form>
-              <input name="name" type="text" value={user && user.name} onChange={onChange}/>
-              <button type='submit'>Update</button>
-              <button type='submit'>Delete</button>
+            <form onSubmit={() => onUpdate()}>
+              <input disabled = {(!(user && user.name)) ? true : false} name = "user" type="text" value={(user && user.name) ? user.name : ""} onChange={onChange}/>
+              <button disabled = {(!(user && user.name)) ? true : false} type='button' onClick={()=> onUpdate()}>Update</button>
+              <button disabled = {(!(user && user.name)) ? true : false} type='button' onClick={()=> onDelete()}>Delete</button>
+              <button disabled = {(!(user && user.name)) ? true : false} type='button' onClick={()=> onDeleteAll()}>Delete All</button>
             </form>
           </div>
           </div>
@@ -187,7 +216,6 @@
         constructor(){
           super();
           this.state = {
-            count: 0,
             users: [],
             name: ""
           }
@@ -198,10 +226,8 @@
        async onCreate(person){
           event.preventDefault();
           const newUser = await db.create({name: person});
-          console.log(newUser);
           const users = [...this.state.users, newUser];
           this.setState({users});
-          console.log(this.state);
           this.state.name = "";
         }
 
@@ -213,15 +239,30 @@
 
         async componentDidMount(){
           const idx = this.props.match.params.idx || 0;
-          console.log(idx);
           const users = await db.read();
           this.setState({users});
+        }
+
+        async componentDidUpdate(prevProps){
+          console.log(prevProps);
+          console.log(this.props);
+          try{
+          if(prevProps.match.params !== this.props.match.params){
+            console.log("hello");
+            const users = await db.read();
+            this.setState({users});
+          }
+          }
+
+          catch(err){
+            console.log(err);
+          }
         }
 
         render(){
           const idx = this.props.match.params.idx ? this.props.match.params.idx * 1 : 0;
           const {onChange, onCreate} = this;
-          const {count, name, users} = this.state;
+          const {name, users} = this.state;
 
           return(
           <div>{users.length}
